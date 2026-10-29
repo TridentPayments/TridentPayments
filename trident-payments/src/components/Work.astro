@@ -1,0 +1,39 @@
+---
+const steps = [
+  { title: 'Get in front of owners', body: 'Walk storefront strips in your area and start real conversations with owners.' },
+  { title: 'Show the opportunity', body: 'With permission, review their processing statement and show where costs may be higher than they need to be.' },
+  { title: 'Close and set up', body: 'Present a suitable solution, including Clover where authorized, and get qualified merchants set up.' },
+  { title: 'Grow your book', body: 'Stay the owner’s point of contact, keep accounts active and grow through referrals.' },
+];
+---
+
+<section id="work" class="pb-16 sm:pb-20 lg:pb-[88px]" aria-labelledby="work-title">
+  <div class="wrap grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,2.15fr)] lg:gap-0">
+    <div class="lg:border-r lg:border-line lg:pr-10">
+      <p class="label">The work</p>
+      <h2 id="work-title" class="mt-3 text-[2.25rem] leading-[1.02] font-semibold tracking-[-0.04em] sm:text-[2.75rem]">
+        Close. Command. Compound.
+      </h2>
+      <p class="mt-4 text-[1.0625rem] leading-relaxed text-muted">A simple process. Real conversations. In-person field sales.</p>
+    </div>
+
+    <ol class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:pl-10">
+      {
+        steps.map((s, i) => (
+          <li class="relative lg:pr-8">
+            <span class="grid size-8 place-items-center rounded-full bg-ink text-[0.75rem] font-semibold text-white">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3 class="mt-4 text-[1rem] font-semibold tracking-[-0.01em]">{s.title}</h3>
+            <p class="mt-2 text-[0.9375rem] leading-relaxed text-muted">{s.body}</p>
+            {i < steps.length - 1 && (
+              <svg viewBox="0 0 20 20" class="absolute top-[3.6rem] right-1 hidden size-4 text-muted lg:block" aria-hidden="true">
+                <path d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

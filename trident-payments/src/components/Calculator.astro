@@ -1,0 +1,407 @@
+---
+import { calculatorDefaults as d } from '../config/site';
+import { formatCompactUsd, formatUsd, niceCeil, pointAt, project } from '../lib/residuals';
+
+const points = project(d);
+const m12 = pointAt(points, 12)!;
+const last = points[points.length - 1];
+const yMax = niceCeil(last.monthlyResidual * 1.04);
+// Sequential shading: light gray in month 1 to near-black in the final month.
+const shade = (i: number, n: number) => {
+  const t = n > 1 ? i / (n - 1) : 1;
+  const c = Math.round(228 - (228 - 17) * Math.pow(t, 1.15));
+  return `rgb(${c} ${c} ${Math.max(c - 3, 17)})`;
+};
+const tickMonths = new Set([1, 6, 12, 18, 24]);
+
+const controls = [
+  { key: 'accountsPerMonth', label: 'New accounts per month', value: d.accountsPerMonth, ...d.limits.accountsPerMonth, prefix: '', suffix: '', minLabel: '1', maxLabel: '20' },
+  { key: 'residualPerAccount', label: 'Your residual per account / mo', value: d.residualPerAccount, ...d.limits.residualPerAccount, prefix: '$', suffix: '', minLabel: '$25', maxLabel: '$500' },
+  { key: 'annualRetentionPct', label: 'Accounts kept each year', value: d.annualRetentionPct, ...d.limits.annualRetentionPct, prefix: '', suffix: '%', minLabel: '50%', maxLabel: '100%' },
+] as const;
+---
+
+<section id="calculator" class="pb-16 sm:pb-20 lg:pb-[88px]" aria-labelledby="calc-title">
+  <div class="wrap">
+    <div class="rounded-[22px] border border-line bg-card p-5 sm:p-8 lg:p-10" data-calculator data-defaults={JSON.stringify(d)}>
+      <div class="grid gap-10 md:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1.6fr)] xl:gap-12">
+        <!-- Explanation -->
+        <div>
+          <p class="label">Illustrative earnings calculator</p>
+          <h2 id="calc-title" class="mt-4 text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.04em] sm:text-[3rem]">See what’s possible.</h2>
+          <p class="mt-4 text-[1.0625rem] leading-relaxed text-muted">
+            Adjust the numbers to model your potential monthly residuals over {d.months} months.
+          </p>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-col gap-7" role="group" aria-label="Calculator assumptions">
+          {
+            controls.map((c) => (
+              <div>
+                <label for={`calc-${c.key}`} class="text-[0.875rem] text-muted">
+                  {c.label}
+                </label>
+                <div class="mt-1 flex items-baseline text-[2rem] leading-none font-semibold tracking-[-0.03em]">
+                  {c.prefix && <span aria-hidden="true">{c.prefix}</span>}
+                  <input
+                    type="number"
+                    inputmode="numeric"
+                    class="calc-num"
+                    min={c.min}
+                    max={c.max}
+                    step={c.step}
+                    value={c.value}
+                    data-num={c.key}
+                    aria-label={`${c.label}, exact value`}
+                  />
+                  {c.suffix && <span aria-hidden="true">{c.suffix}</span>}
+                </div>
+                <input
+                  id={`calc-${c.key}`}
+                  class="range mt-1"
+                  type="range"
+                  min={c.min}
+                  max={c.max}
+                  step={c.step}
+                  value={c.value}
+                  data-range={c.key}
+                  style={`--fill:${(((c.value - c.min) / (c.max - c.min)) * 100).toFixed(1)}%`}
+                />
+                <div class="flex justify-between text-[0.75rem] text-muted" aria-hidden="true">
+                  <span>{c.minLabel}</span>
+                  <span>{c.maxLabel}</span>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Outputs + chart -->
+        <div class="rounded-[20px] bg-white p-5 sm:p-6 md:col-span-2 xl:col-span-1">
+          <dl class="grid grid-cols-3 divide-x divide-line">
+            <div class="pr-3 sm:pr-5">
+              <dt class="text-[0.8125rem] whitespace-nowrap text-muted">Month 12</dt>
+              <dd class="mt-1.5 text-[1.375rem] font-semibold tracking-[-0.03em] sm:text-[2rem]" data-stat="m12">{formatUsd(m12.monthlyResidual)}</dd>
+              <dd class="text-[0.8125rem] text-muted">residual / month</dd>
+            </div>
+            <div class="px-3 sm:px-5">
+              <dt class="text-[0.8125rem] whitespace-nowrap text-muted">Month {d.months}</dt>
+              <dd class="mt-1.5 text-[1.375rem] font-semibold tracking-[-0.03em] sm:text-[2rem]" data-stat="last">{formatUsd(last.monthlyResidual)}</dd>
+              <dd class="text-[0.8125rem] text-muted">residual / month</dd>
+            </div>
+            <div class="pl-3 sm:pl-5">
+              <dt class="text-[0.8125rem] whitespace-nowrap text-muted">Active accounts</dt>
+              <dd class="mt-1.5 text-[1.375rem] font-semibold tracking-[-0.03em] sm:text-[2rem]" data-stat="active">{Math.round(last.activeAccounts)}</dd>
+              <dd class="text-[0.8125rem] text-muted">of <span data-stat="signed">{last.signedToDate}</span> signed</dd>
+            </div>
+          </dl>
+
+          <div class="mt-7">
+            <div class="mb-2 flex items-baseline justify-between text-[0.75rem] text-muted">
+              <span>Monthly residual by month</span>
+              <span>Scale to <span data-scale>{formatCompactUsd(yMax)}</span></span>
+            </div>
+            <div class="relative">
+              <div
+                class="flex h-40 items-end gap-[2px] border-b border-line sm:h-48 sm:gap-[3px]"
+                tabindex="0"
+                role="img"
+                aria-label={`Bar chart. Hypothetical monthly residual grows from ${formatUsd(points[0].monthlyResidual)} in month 1 to ${formatUsd(last.monthlyResidual)} in month ${last.month}.`}
+                aria-describedby="chart-help"
+                data-bars
+              >
+                {
+                  points.map((p, i) => (
+                    <span
+                      class="bar flex-1 rounded-t-[3px]"
+                      style={`height:${((p.monthlyResidual / yMax) * 100).toFixed(2)}%;background-color:${shade(i, points.length)}`}
+                      data-month={p.month}
+                    />
+                  ))
+                }
+              </div>
+              <div class="pointer-events-none absolute z-10 hidden rounded-xl bg-ink px-3 py-2 text-white shadow-lg" data-tooltip aria-hidden="true">
+                <p class="text-[0.9375rem] font-semibold whitespace-nowrap" data-tt-value></p>
+                <p class="text-[0.75rem] whitespace-nowrap text-white/70" data-tt-label></p>
+              </div>
+            </div>
+            <div class="mt-2 flex gap-[2px] text-[0.75rem] text-muted sm:gap-[3px]" aria-hidden="true">
+              {points.map((p) => <span class="flex-1 text-center">{tickMonths.has(p.month) ? p.month : ''}</span>)}
+            </div>
+            <p class="mt-1 text-center text-[0.75rem] text-muted" aria-hidden="true">Month</p>
+            <p id="chart-help" class="sr-only">Use the left and right arrow keys to read each month.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="sr-only" aria-live="polite" data-live></p>
+
+      <div class="mt-8 border-t border-[#e2e2de] pt-5 text-[0.875rem] leading-relaxed text-muted">
+        <p>
+          <strong class="font-semibold text-ink">Illustration only, using the numbers you set. Not a promise of results.</strong> These are not
+          typical earnings or Trident compensation rates. Upfront commissions are not included. Actual pay depends on accounts signed,
+          merchant processing volume, retention and your representative agreement.
+        </p>
+        <details class="group mt-3">
+          <summary class="inline-flex cursor-pointer items-center gap-1.5 font-medium text-ink">
+            How it’s calculated and month-by-month table
+            <svg viewBox="0 0 20 20" class="size-4 transition-transform group-open:rotate-180" aria-hidden="true">
+              <path d="m6 8 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </summary>
+          <div class="mt-3 grid gap-6 md:grid-cols-2">
+            <div class="space-y-2">
+              <p>
+                You sign the same number of accounts at the start of each month. Annual retention is converted to an equivalent monthly rate (90% a year
+                ≈ 99.1% a month), and every month’s group of accounts shrinks at that rate after signing.
+              </p>
+              <p>
+                Every active account is assumed to pay the same flat monthly residual. Real books are less tidy: merchants process different amounts and
+                some leave early.
+              </p>
+            </div>
+            <div class="max-h-72 overflow-auto rounded-xl border border-line bg-white" tabindex="0" role="region" aria-label="Month-by-month table, scrollable">
+              <table class="w-full text-left text-[0.875rem] tabular-nums">
+                <caption class="sr-only">Hypothetical active accounts and monthly residual by month</caption>
+                <thead class="sticky top-0 bg-white text-ink">
+                  <tr>
+                    <th scope="col" class="px-3 py-2 font-medium">Month</th>
+                    <th scope="col" class="px-3 py-2 text-right font-medium">Active accounts</th>
+                    <th scope="col" class="px-3 py-2 text-right font-medium">Monthly residual</th>
+                  </tr>
+                </thead>
+                <tbody data-table>
+                  {
+                    points.map((p) => (
+                      <tr class="border-t border-line">
+                        <td class="px-3 py-1.5">{p.month}</td>
+                        <td class="px-3 py-1.5 text-right">{p.activeAccounts.toFixed(1)}</td>
+                        <td class="px-3 py-1.5 text-right">{formatUsd(p.monthlyResidual)}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .calc-num {
+    width: 3.2ch;
+    min-width: 1.6ch;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    border-radius: 6px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  @supports (field-sizing: content) {
+    .calc-num {
+      field-sizing: content;
+      width: auto;
+    }
+  }
+  .calc-num::-webkit-outer-spin-button,
+  .calc-num::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .calc-num:hover {
+    background: rgb(0 0 0 / 0.04);
+  }
+  .bar {
+    transition:
+      height 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 150ms;
+  }
+  .bar.is-active {
+    opacity: 0.55;
+  }
+</style>
+
+<script>
+  import { formatCompactUsd, formatUsd, niceCeil, pointAt, project, type ProjectionInput, type ProjectionPoint } from '../lib/residuals';
+  import { track } from '../lib/track';
+
+  type Key = 'accountsPerMonth' | 'residualPerAccount' | 'annualRetentionPct';
+  const KEYS: Key[] = ['accountsPerMonth', 'residualPerAccount', 'annualRetentionPct'];
+
+  const root = document.querySelector<HTMLElement>('[data-calculator]');
+  if (root) init(root);
+
+  function init(root: HTMLElement) {
+    const defaults = JSON.parse(root.dataset.defaults!) as ProjectionInput;
+    const q = <T extends Element>(sel: string) => root.querySelector<T>(sel)!;
+    const ranges = Object.fromEntries(KEYS.map((k) => [k, q<HTMLInputElement>(`[data-range="${k}"]`)])) as Record<Key, HTMLInputElement>;
+    const nums = Object.fromEntries(KEYS.map((k) => [k, q<HTMLInputElement>(`[data-num="${k}"]`)])) as Record<Key, HTMLInputElement>;
+    const barsBox = q<HTMLElement>('[data-bars]');
+    const bars = [...barsBox.querySelectorAll<HTMLElement>('.bar')];
+    const tooltip = q<HTMLElement>('[data-tooltip]');
+    const ttValue = q<HTMLElement>('[data-tt-value]');
+    const ttLabel = q<HTMLElement>('[data-tt-label]');
+    const live = q<HTMLElement>('[data-live]');
+    const table = q<HTMLTableSectionElement>('[data-table]');
+    const scale = q<HTMLElement>('[data-scale]');
+
+    let points: ProjectionPoint[] = [];
+    let active: number | null = null;
+    let used = false;
+
+    const clamp = (k: Key, v: number) => {
+      const r = ranges[k];
+      const min = Number(r.min);
+      const max = Number(r.max);
+      const step = Number(r.step);
+      if (!Number.isFinite(v)) return Number(r.value);
+      return Math.min(max, Math.max(min, Math.round(v / step) * step));
+    };
+
+    const setStat = (name: string, text: string) => {
+      const el = root.querySelector<HTMLElement>(`[data-stat="${name}"]`);
+      if (el) el.textContent = text;
+    };
+
+    function syncRangeFill(k: Key) {
+      const r = ranges[k];
+      const pct = ((Number(r.value) - Number(r.min)) / (Number(r.max) - Number(r.min))) * 100;
+      r.style.setProperty('--fill', `${pct.toFixed(1)}%`);
+    }
+
+    function update() {
+      points = project({
+        accountsPerMonth: Number(ranges.accountsPerMonth.value),
+        residualPerAccount: Number(ranges.residualPerAccount.value),
+        annualRetentionPct: Number(ranges.annualRetentionPct.value),
+        months: defaults.months,
+      });
+      const m12 = pointAt(points, 12);
+      const last = points[points.length - 1];
+      const yMax = niceCeil(last.monthlyResidual * 1.04);
+      setStat('m12', m12 ? formatUsd(m12.monthlyResidual) : '—');
+      setStat('last', formatUsd(last.monthlyResidual));
+      setStat('active', String(Math.round(last.activeAccounts)));
+      setStat('signed', String(last.signedToDate));
+      scale.textContent = formatCompactUsd(yMax);
+      bars.forEach((bar, i) => {
+        bar.style.height = `${((points[i].monthlyResidual / yMax) * 100).toFixed(2)}%`;
+      });
+      barsBox.setAttribute(
+        'aria-label',
+        `Bar chart. Hypothetical monthly residual grows from ${formatUsd(points[0].monthlyResidual)} in month 1 to ${formatUsd(last.monthlyResidual)} in month ${last.month}.`
+      );
+      table.replaceChildren(
+        ...points.map((p) => {
+          const tr = document.createElement('tr');
+          tr.className = 'border-t border-line';
+          [String(p.month), p.activeAccounts.toFixed(1), formatUsd(p.monthlyResidual)].forEach((text, i) => {
+            const td = document.createElement('td');
+            td.className = i === 0 ? 'px-3 py-1.5' : 'px-3 py-1.5 text-right';
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+          return tr;
+        })
+      );
+      if (active !== null) show(active);
+    }
+
+    function announce() {
+      const m12 = pointAt(points, 12);
+      const last = points[points.length - 1];
+      live.textContent = `Hypothetical: ${m12 ? formatUsd(m12.monthlyResidual) : ''} a month at month 12, ${formatUsd(
+        last.monthlyResidual
+      )} a month at month ${last.month}, about ${Math.round(last.activeAccounts)} active accounts.`;
+    }
+
+    function markUsed() {
+      if (!used) {
+        used = true;
+        track('calculator_used');
+      }
+    }
+
+    function show(month: number) {
+      const p = points[month - 1];
+      if (!p) return;
+      active = month;
+      bars.forEach((b, i) => b.classList.toggle('is-active', i === month - 1));
+      ttValue.textContent = `${formatUsd(p.monthlyResidual)} / month`;
+      ttLabel.textContent = `Month ${p.month} · ${p.activeAccounts.toFixed(1)} active accounts`;
+      tooltip.classList.remove('hidden');
+      const bar = bars[month - 1];
+      const boxRect = barsBox.getBoundingClientRect();
+      const barRect = bar.getBoundingClientRect();
+      const center = barRect.left - boxRect.left + barRect.width / 2;
+      const tw = tooltip.offsetWidth;
+      tooltip.style.left = `${Math.min(Math.max(center - tw / 2, 0), boxRect.width - tw)}px`;
+      tooltip.style.top = `${Math.max(barRect.top - boxRect.top - tooltip.offsetHeight - 8, -tooltip.offsetHeight - 4)}px`;
+    }
+
+    function hide() {
+      active = null;
+      bars.forEach((b) => b.classList.remove('is-active'));
+      tooltip.classList.add('hidden');
+    }
+
+    const monthAt = (clientX: number) => {
+      const r = barsBox.getBoundingClientRect();
+      return Math.min(bars.length, Math.max(1, Math.floor(((clientX - r.left) / r.width) * bars.length) + 1));
+    };
+
+    for (const k of KEYS) {
+      ranges[k].addEventListener('input', () => {
+        nums[k].value = ranges[k].value;
+        syncRangeFill(k);
+        markUsed();
+        update();
+      });
+      ranges[k].addEventListener('change', announce);
+      nums[k].addEventListener('input', () => {
+        const v = Number(nums[k].value);
+        if (nums[k].value === '' || !Number.isFinite(v) || v < Number(ranges[k].min) || v > Number(ranges[k].max)) return;
+        ranges[k].value = String(v);
+        syncRangeFill(k);
+        markUsed();
+        update();
+      });
+      nums[k].addEventListener('change', () => {
+        const v = clamp(k, Number(nums[k].value));
+        nums[k].value = String(v);
+        ranges[k].value = String(v);
+        syncRangeFill(k);
+        update();
+        announce();
+      });
+    }
+
+    barsBox.addEventListener('pointermove', (e) => show(monthAt(e.clientX)));
+    barsBox.addEventListener('pointerdown', (e) => {
+      markUsed();
+      show(monthAt(e.clientX));
+    });
+    barsBox.addEventListener('pointerleave', (e) => {
+      if (e.pointerType === 'mouse') hide();
+    });
+    barsBox.addEventListener('blur', hide);
+    barsBox.addEventListener('keydown', (e) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+      e.preventDefault();
+      const cur = active ?? bars.length;
+      const next = e.key === 'Home' ? 1 : e.key === 'End' ? bars.length : cur + (e.key === 'ArrowRight' ? 1 : -1);
+      show(Math.min(bars.length, Math.max(1, next)));
+      live.textContent = `${ttValue.textContent}, ${ttLabel.textContent}`;
+    });
+
+    update();
+  }
+</script>

@@ -1,0 +1,27 @@
+---
+/**
+ * Placeholder mark + wordmark until official logo assets are supplied.
+ * Replace this SVG (and the files in /public) with the final logo.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<span class:list={['inline-flex items-center gap-2.5 text-ink', className]}>
+  <svg viewBox="0 0 24 28" class="h-7 w-6 shrink-0" aria-hidden="true">
+    <path d="M12 1.5 22 5v8.2c0 6.1-4.2 10.9-10 13.3C6.2 24.1 2 19.3 2 13.2V5L12 1.5Z" fill="currentColor"></path>
+    <path
+      d="M12 7v14M7.5 9.2v3.3a4.5 4.5 0 0 0 9 0V9.2M6.3 10.3l1.2-1.4 1.2 1.4M15.3 10.3l1.2-1.4 1.2 1.4M10.8 8.4 12 7l1.2 1.4"
+      fill="none"
+      stroke="#fafaf8"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"></path>
+  </svg>
+  <span class="flex flex-col text-[0.8125rem] leading-[1.05] font-semibold tracking-[0.14em] uppercase">
+    <span>Trident</span>
+    <span class="font-medium">Payments</span>
+  </span>
+</span>

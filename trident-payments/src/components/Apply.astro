@@ -1,0 +1,498 @@
+---
+import { site } from '../config/site';
+import { COMMITMENT_OPTIONS, EXPERIENCE_OPTIONS, LIMITS } from '../lib/validation';
+
+const endpoint = (import.meta.env.PUBLIC_APPLICATION_ENDPOINT ?? '').trim();
+// https in production; plain http is accepted for localhost testing only.
+const configured = /^(https:\/\/|http:\/\/localhost[:/])/.test(endpoint);
+if (!configured) {
+  console.warn('[trident] PUBLIC_APPLICATION_ENDPOINT is not set — the application form will show a "not connected" notice.');
+}
+
+const nextSteps = [
+  'Apply in about three minutes.',
+  'Applications are reviewed ahead of the January 2027 launch.',
+  'If it looks like a fit, we’ll reach out to talk through the role, the agreement and next steps.',
+];
+
+const text = [
+  { id: 'fullName', label: 'Full name', type: 'text', autocomplete: 'name', required: true, max: LIMITS.fullName, placeholder: '' },
+  { id: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true, max: LIMITS.email, placeholder: 'you@example.com', inputmode: 'email' },
+  { id: 'phone', label: 'Phone', type: 'tel', autocomplete: 'tel-national', required: true, max: 20, placeholder: '(407) 555-0123', inputmode: 'tel' },
+  { id: 'location', label: 'City, state', type: 'text', autocomplete: 'off', required: true, max: LIMITS.location, placeholder: 'Orlando, FL' },
+  { id: 'instagram', label: 'Instagram', type: 'text', autocomplete: 'off', required: false, max: LIMITS.instagram, placeholder: '@yourhandle' },
+  { id: 'currentRole', label: 'Current role', type: 'text', autocomplete: 'organization-title', required: true, max: LIMITS.currentRole, placeholder: 'e.g. Solar sales rep' },
+] as const;
+---
+
+<section id="apply" class="border-t border-line pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-[88px] lg:pb-[104px]" aria-labelledby="apply-title">
+  <div class="wrap grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:grid-rows-[auto_1fr] lg:gap-x-20">
+    <div class="lg:col-start-1 lg:row-start-1">
+      <p class="label">The founding bench</p>
+      <h2 id="apply-title" class="mt-3 text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.04em] sm:text-[3rem]">Put your name<br />on the radar.</h2>
+      <p class="mt-4 text-[1.0625rem] leading-relaxed text-ink/80">
+        This is an early-interest form, not a job offer. Strong applicants will be contacted as Trident Payments prepares for its {`${site.launch.label} launch.`}
+      </p>
+    </div>
+
+    <div class="lg:col-start-2 lg:row-span-2 lg:row-start-1" data-apply-root data-endpoint={configured ? endpoint : ''}>
+      <div>
+        {
+          !configured && (
+            <div class="mb-6 rounded-xl border border-line bg-card p-4 text-[0.9375rem] leading-relaxed" role="note">
+              <strong class="font-semibold">Online applications aren’t connected yet.</strong>
+              <span class="text-muted">
+                {' '}
+                This form checks your answers but can’t send them until the application inbox is live.
+                {site.contact.email ? (
+                  <>
+                    {' '}
+                    Meanwhile, email{' '}
+                    <a class="link" href={`mailto:${site.contact.email}`}>
+                      {site.contact.email}
+                    </a>
+                    .
+                  </>
+                ) : (
+                  ' Please check back soon.'
+                )}
+              </span>
+            </div>
+          )
+        }
+
+        <form novalidate data-apply-form aria-labelledby="apply-title">
+          <div class="mb-6 hidden rounded-xl border border-danger/25 bg-white p-4" role="alert" tabindex="-1" data-error-summary>
+            <p class="font-semibold text-danger">Please check the highlighted fields:</p>
+            <ul class="mt-2 list-disc space-y-1 pl-5 text-[0.875rem] text-danger" data-error-list></ul>
+          </div>
+
+          <div class="grid gap-x-4 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
+            {
+              text.map((f) => (
+                <div>
+                  <label for={f.id} class="field-label">
+                    {f.label}
+                    {f.required ? (
+                      <span class="text-muted" aria-hidden="true">
+                        {' '}
+                        *
+                      </span>
+                    ) : null}
+                  </label>
+                  <input
+                    id={f.id}
+                    name={f.id}
+                    type={f.type}
+                    class="field"
+                    autocomplete={f.autocomplete}
+                    inputmode={'inputmode' in f ? f.inputmode : undefined}
+                    maxlength={f.max}
+                    placeholder={f.placeholder || undefined}
+                    required={f.required}
+                    aria-required={f.required ? 'true' : undefined}
+                    aria-describedby={`${f.id}-error`}
+                    autocapitalize={f.type === 'text' && f.id !== 'instagram' ? 'words' : 'off'}
+                    spellcheck="false"
+                  />
+                  <p id={`${f.id}-error`} class="field-error hidden" data-error-for={f.id} />
+                </div>
+              ))
+            }
+
+            <div>
+              <label for="commitment" class="field-label">Commitment interest</label>
+              <select id="commitment" name="commitment" class="field" aria-describedby="commitment-error">
+                <option value="">Select one</option>
+                {COMMITMENT_OPTIONS.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+              <p id="commitment-error" class="field-error hidden" data-error-for="commitment"></p>
+            </div>
+            <div>
+              <label for="experienceLevel" class="field-label">Sales experience</label>
+              <select id="experienceLevel" name="experienceLevel" class="field" aria-describedby="experienceLevel-error">
+                <option value="">Select one</option>
+                {EXPERIENCE_OPTIONS.map((o) => <option value={o.value}>{o.label}</option>)}
+              </select>
+              <p id="experienceLevel-error" class="field-error hidden" data-error-for="experienceLevel"></p>
+            </div>
+            <div class="sm:col-span-2 xl:col-span-1">
+              <label for="relevantExperience" class="field-label">Relevant experience</label>
+              <input
+                id="relevantExperience"
+                name="relevantExperience"
+                type="text"
+                class="field"
+                maxlength={LIMITS.relevantExperience}
+                placeholder="Solar, pest, alarm…"
+                aria-describedby="relevantExperience-error"
+              />
+              <p id="relevantExperience-error" class="field-error hidden" data-error-for="relevantExperience"></p>
+            </div>
+          </div>
+
+          <div class="mt-5">
+            <div class="flex items-baseline justify-between gap-3">
+              <label for="whyTrident" class="field-label">Why Trident Payments? <span class="text-muted" aria-hidden="true">*</span></label>
+              <span id="whyTrident-hint" class="text-[0.8125rem] text-muted tabular-nums" data-counter>0 / {LIMITS.whyTrident}</span>
+            </div>
+            <textarea
+              id="whyTrident"
+              name="whyTrident"
+              rows="4"
+              class="field resize-y"
+              required
+              aria-required="true"
+              maxlength={LIMITS.whyTrident}
+              placeholder="A sentence or two is plenty."
+              aria-describedby="whyTrident-hint whyTrident-error"></textarea>
+            <p id="whyTrident-error" class="field-error hidden" data-error-for="whyTrident"></p>
+          </div>
+
+          <!-- Spam honeypot: hidden from people, tempting to bots. -->
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <label for="website">Leave this field empty</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="mt-6">
+            <label class="flex cursor-pointer gap-3 text-[0.9375rem] leading-relaxed text-muted">
+              <input
+                id="consent"
+                name="consent"
+                type="checkbox"
+                class="mt-0.5 size-5 shrink-0 accent-[#111111]"
+                required
+                aria-required="true"
+                aria-describedby="consent-error"
+              />
+              <span>
+                I understand this is an expression of interest, not a job offer or guaranteed position, and I agree that Trident Payments may contact me by
+                email, phone or text about this opportunity. <span aria-hidden="true">*</span>
+              </span>
+            </label>
+            <p id="consent-error" class="field-error hidden" data-error-for="consent"></p>
+          </div>
+
+          <button type="submit" class="btn mt-7 min-h-[3.25rem] w-full rounded-xl" data-submit>
+            <span data-submit-label>Submit interest</span>
+            <svg viewBox="0 0 20 20" class="size-4" aria-hidden="true">
+              <path d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </button>
+
+          <p class="mt-4 hidden rounded-xl bg-white p-4 text-[0.9375rem] leading-relaxed" role="status" aria-live="polite" data-form-status></p>
+
+          <p class="mt-4 text-[0.8125rem] leading-relaxed text-muted">
+            <span aria-hidden="true">*</span> Required. We use what you share only to review your application and contact you about this opportunity.
+            {
+              site.legal.privacyPolicyUrl && (
+                <>
+                  {' '}
+                  See our{' '}
+                  <a href={site.legal.privacyPolicyUrl} class="link">
+                    privacy policy
+                  </a>
+                  .
+                </>
+              )
+            }
+          </p>
+        </form>
+
+        <div class="hidden py-8 text-center" data-success tabindex="-1" aria-labelledby="success-title">
+          <span class="mx-auto grid size-14 place-items-center rounded-full bg-ink text-white">
+            <svg viewBox="0 0 24 24" class="size-7" aria-hidden="true">
+              <path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </span>
+          <h3 id="success-title" class="mt-5 text-[1.75rem] font-semibold tracking-[-0.03em]">Application received<span data-success-name></span>.</h3>
+          <p class="mx-auto mt-3 max-w-md leading-relaxed text-muted">
+            We review applications ahead of the {site.launch.label} launch and will reach out if it looks like a fit. Submitting isn’t a job offer or a
+            guarantee of a position.
+          </p>
+          {
+            site.social.instagram && (
+              <a href={site.social.instagram} class="link mt-5 inline-block" target="_blank" rel="noopener noreferrer">
+                Follow Trident on Instagram
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-start-1 lg:row-start-2">
+      <ol class="space-y-4 border-t border-line pt-6">
+        {
+          nextSteps.map((s, i) => (
+            <li class="flex gap-4 text-[1rem] leading-relaxed">
+              <span class="grid size-7 shrink-0 place-items-center rounded-full border border-line text-[0.8125rem] font-medium">{i + 1}</span>
+              <span class="pt-0.5">{s}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="mt-6 text-[0.875rem] leading-relaxed text-muted">
+        Applying is free. An application is an early expression of interest, not a job offer, a contract or a guaranteed position.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    formatUsPhone,
+    normalizeInstagram,
+    normalizeUsPhone,
+    validateApplication,
+    type ApplicationFields,
+    type FieldErrors,
+  } from '../lib/validation';
+  import { track } from '../lib/track';
+  import { site } from '../config/site';
+
+  const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
+  const UTM_STORE = 'trident:utm';
+
+  // Remember campaign attribution (e.g. ?utm_source=instagram) for this visit.
+  try {
+    const params = new URLSearchParams(location.search);
+    const found = Object.fromEntries(UTM_KEYS.filter((k) => params.get(k)).map((k) => [k, params.get(k)!.slice(0, 100)]));
+    if (Object.keys(found).length) sessionStorage.setItem(UTM_STORE, JSON.stringify(found));
+  } catch {
+    /* storage may be unavailable (private mode, in-app browsers) */
+  }
+
+  function readUtm(): Record<string, string> {
+    try {
+      return JSON.parse(sessionStorage.getItem(UTM_STORE) || '{}');
+    } catch {
+      return {};
+    }
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-apply-root]');
+  const form = root?.querySelector<HTMLFormElement>('[data-apply-form]');
+  if (root && form) init(root, form);
+
+  function init(root: HTMLElement, form: HTMLFormElement) {
+    const endpoint = root.dataset.endpoint || '';
+    const summary = form.querySelector<HTMLElement>('[data-error-summary]')!;
+    const summaryList = form.querySelector<HTMLUListElement>('[data-error-list]')!;
+    const status = form.querySelector<HTMLElement>('[data-form-status]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]')!;
+    const success = root.querySelector<HTMLElement>('[data-success]')!;
+    const counter = form.querySelector<HTMLElement>('[data-counter]')!;
+    const why = form.elements.namedItem('whyTrident') as HTMLTextAreaElement;
+    const touched = new Set<string>();
+    let submitting = false;
+
+    const labels: Record<keyof ApplicationFields, string> = {
+      fullName: 'Full name',
+      email: 'Email',
+      phone: 'Phone',
+      location: 'City, state',
+      instagram: 'Instagram',
+      currentRole: 'Current role',
+      commitment: 'Commitment interest',
+      experienceLevel: 'Sales experience',
+      relevantExperience: 'Relevant experience',
+      whyTrident: 'Why Trident Payments?',
+      consent: 'Consent',
+    };
+
+    const value = (name: string) => {
+      const el = form.elements.namedItem(name);
+      if (el instanceof HTMLInputElement && el.type === 'checkbox') return el.checked;
+      return (el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)?.value ?? '';
+    };
+
+    function collect(): ApplicationFields {
+      return {
+        fullName: value('fullName') as string,
+        email: value('email') as string,
+        phone: value('phone') as string,
+        location: value('location') as string,
+        instagram: value('instagram') as string,
+        currentRole: value('currentRole') as string,
+        commitment: value('commitment') as string,
+        experienceLevel: value('experienceLevel') as string,
+        relevantExperience: value('relevantExperience') as string,
+        whyTrident: value('whyTrident') as string,
+        consent: value('consent') as boolean,
+      };
+    }
+
+    function showFieldError(name: string, message?: string) {
+      const errEl = form.querySelector<HTMLElement>(`[data-error-for="${name}"]`);
+      const input = form.querySelector<HTMLElement>(`#${name}`);
+      if (errEl) {
+        errEl.textContent = message ?? '';
+        errEl.classList.toggle('hidden', !message);
+      }
+      if (input) {
+        if (message) input.setAttribute('aria-invalid', 'true');
+        else input.removeAttribute('aria-invalid');
+      }
+    }
+
+    function render(errors: FieldErrors, only?: Set<string>) {
+      (Object.keys(labels) as Array<keyof ApplicationFields>).forEach((k) => {
+        if (only && !only.has(k)) return;
+        showFieldError(k, errors[k]);
+      });
+    }
+
+    function setStatus(kind: 'error' | 'warn' | 'none', message = '') {
+      status.className =
+        'mt-4 rounded-xl bg-white p-4 text-[0.9375rem] leading-relaxed ' +
+        (kind === 'error' ? 'border border-danger/25 text-danger' : kind === 'warn' ? 'border border-line text-ink' : 'hidden');
+      status.textContent = message;
+    }
+
+    // Re-validate a field once it has been touched.
+    form.addEventListener('focusout', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (!t.name || t.name === 'website') return;
+      if (t.name === 'phone') {
+        const digits = normalizeUsPhone(t.value);
+        if (digits) t.value = formatUsPhone(digits);
+      }
+      if (t.name === 'instagram' && t.value.trim()) t.value = normalizeInstagram(t.value);
+      if (t.value !== '' || t.type === 'checkbox') touched.add(t.name);
+      render(validateApplication(collect()), touched);
+    });
+    form.addEventListener('input', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.name === 'whyTrident') counter.textContent = `${why.value.length} / ${why.maxLength}`;
+      if (touched.has(t.name)) render(validateApplication(collect()), new Set([t.name]));
+    });
+    form.addEventListener('change', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t.type === 'checkbox' || t.tagName === 'SELECT') {
+        touched.add(t.name);
+        render(validateApplication(collect()), new Set([t.name]));
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitting) return;
+
+      const fields = collect();
+      const errors = validateApplication(fields);
+      const keys = Object.keys(errors) as Array<keyof ApplicationFields>;
+      Object.keys(labels).forEach((k) => touched.add(k));
+      render(errors);
+
+      if (keys.length) {
+        summaryList.replaceChildren(
+          ...keys.map((k) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#${k}`;
+            a.className = 'underline';
+            a.textContent = `${labels[k]}: ${errors[k]}`;
+            a.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              form.querySelector<HTMLElement>(`#${k}`)?.focus();
+            });
+            li.appendChild(a);
+            return li;
+          })
+        );
+        summary.classList.remove('hidden');
+        summary.focus();
+        setStatus('none');
+        return;
+      }
+      summary.classList.add('hidden');
+
+      // Bots fill the honeypot; quietly pretend success without sending.
+      if ((value('website') as string).trim()) {
+        showSuccess(fields.fullName);
+        return;
+      }
+
+      if (!endpoint) {
+        setStatus(
+          'warn',
+          site.contact.email
+            ? `Your answers look good, but online applications aren’t connected yet, so nothing was sent. Please email ${site.contact.email} instead — your answers are still in the form.`
+            : 'Your answers look good, but online applications aren’t connected yet, so nothing was sent. Please check back soon — your answers are still in the form.'
+        );
+        return;
+      }
+
+      const phoneDigits = normalizeUsPhone(fields.phone)!;
+      const payload = {
+        _subject: `Founding rep application — ${fields.fullName.trim()} (${fields.location.trim()})`,
+        full_name: fields.fullName.trim(),
+        email: fields.email.trim(),
+        phone: formatUsPhone(phoneDigits),
+        city_state: fields.location.trim(),
+        instagram: normalizeInstagram(fields.instagram),
+        current_role: fields.currentRole.trim(),
+        commitment: fields.commitment || 'not specified',
+        experience_level: fields.experienceLevel || 'not specified',
+        relevant_experience: fields.relevantExperience.trim(),
+        why_trident: fields.whyTrident.trim(),
+        consent_to_contact: 'yes',
+        ...readUtm(),
+        landing_page: location.href.split('#')[0],
+        referrer: document.referrer || '',
+        submitted_at: new Date().toISOString(),
+      };
+
+      submitting = true;
+      submit.disabled = true;
+      submit.setAttribute('aria-busy', 'true');
+      submitLabel.textContent = 'Sending…';
+      setStatus('none');
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        track('application_submitted', {
+          commitment: payload.commitment,
+          experience: payload.experience_level,
+          source: (payload as Record<string, string>).utm_source || 'direct',
+        });
+        showSuccess(fields.fullName);
+      } catch (err) {
+        track('application_error', { reason: err instanceof Error ? err.message : 'unknown' });
+        setStatus(
+          'error',
+          'We couldn’t send your application just now. Check your connection and try again — your answers are still here.' +
+            (site.contact.email ? ` If it keeps failing, email ${site.contact.email}.` : '')
+        );
+      } finally {
+        clearTimeout(timer);
+        submitting = false;
+        submit.disabled = false;
+        submit.removeAttribute('aria-busy');
+        submitLabel.textContent = 'Submit interest';
+      }
+    });
+
+    function showSuccess(fullName: string) {
+      const first = fullName.trim().split(/\s+/)[0];
+      const nameEl = success.querySelector<HTMLElement>('[data-success-name]');
+      if (nameEl && first) nameEl.textContent = `, ${first}`;
+      form.classList.add('hidden');
+      root.querySelector('[role="note"]')?.classList.add('hidden');
+      success.classList.remove('hidden');
+      success.focus();
+      success.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }
+</script>

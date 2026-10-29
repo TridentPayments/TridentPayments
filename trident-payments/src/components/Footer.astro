@@ -1,0 +1,58 @@
+---
+import Logo from './Logo.astro';
+import { site } from '../config/site';
+
+const year = new Date().getFullYear();
+const links = [
+  { label: 'Apply', href: '#apply' },
+  { label: 'FAQ', href: '#faq' },
+  site.contact.email && { label: site.contact.email, href: `mailto:${site.contact.email}` },
+  site.contact.phone && { label: site.contact.phone, href: `tel:${site.contact.phone}` },
+  site.social.instagram && { label: 'Instagram', href: site.social.instagram, external: true },
+  site.social.linkedin && { label: 'LinkedIn', href: site.social.linkedin, external: true },
+  site.legal.privacyPolicyUrl && { label: 'Privacy', href: site.legal.privacyPolicyUrl },
+].filter(Boolean) as Array<{ label: string; href: string; external?: boolean }>;
+---
+
+<footer class="border-t border-line">
+  <div class="wrap py-10">
+    <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+        <Logo />
+        <span class="hidden h-8 w-px bg-line sm:block" aria-hidden="true"></span>
+        <p class="text-[0.875rem] text-muted">{site.tagline}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.875rem]">
+        <nav aria-label="Footer">
+          <ul class="flex flex-wrap gap-x-6 gap-y-2">
+            {
+              links.map((l) => (
+                <li>
+                  <a href={l.href} class="text-ink/80 hover:text-ink" {...(l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                    {l.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+        <p class="text-muted">© {year} {site.legal.legalEntity ?? site.name}</p>
+      </div>
+    </div>
+    {site.contact.address && <p class="mt-4 text-[0.875rem] text-muted">{site.contact.address}</p>}
+
+    <div class="mt-8 space-y-2 border-t border-line pt-6 text-[0.8125rem] leading-relaxed text-muted">
+      <p>
+        <span class="font-medium text-ink">Earnings disclosure.</span> Earnings figures on this site, including the calculator, are hypothetical
+        illustrations, not typical earnings, projections or guarantees. Actual compensation depends on merchant processing volume, retention, the terms of
+        your representative agreement, your own effort and other factors. Some representatives may earn little or nothing.
+      </p>
+      <p>
+        <span class="font-medium text-ink">Independent contractors.</span> Representatives work with {site.name} as independent (1099) contractors, not
+        employees. Applying is an expression of interest, not an offer, contract or guaranteed position. Program details, including compensation terms and
+        equipment policies, may change before launch. Clover is a trademark of its respective owner; its mention does not imply endorsement. Photography is
+        illustrative.
+      </p>
+    </div>
+  </div>
+</footer>

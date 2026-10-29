@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { markets } from '../config/site';
+import orlando from '../assets/markets/orlando.jpg';
+import daytona from '../assets/markets/daytona-volusia.jpg';
+import tampa from '../assets/markets/tampa.jpg';
+import jacksonville from '../assets/markets/jacksonville.jpg';
+import miami from '../assets/markets/miami.jpg';
+import sarasota from '../assets/markets/sarasota.jpg';
+import melbourne from '../assets/markets/melbourne.jpg';
+
+const photos: Record<string, { src: ImageMetadata; alt: string }> = {
+  Orlando: { src: orlando, alt: 'Downtown Orlando skyline across Lake Eola' },
+  'Daytona / Volusia': { src: daytona, alt: 'Daytona Beach shoreline with beachfront towers' },
+  Tampa: { src: tampa, alt: 'Downtown Tampa skyline along the Hillsborough River' },
+  Jacksonville: { src: jacksonville, alt: 'Jacksonville skyline on the St. Johns River' },
+  Miami: { src: miami, alt: 'Miami skyline from Biscayne Bay' },
+  Sarasota: { src: sarasota, alt: 'Sarasota bayfront marina with palm trees' },
+  Melbourne: { src: melbourne, alt: 'Melbourne, Florida riverfront on the Indian River Lagoon' },
+};
+
+const qualities = [
+  'Door-to-door, solar, pest, alarm or other field sales experience',
+  'You can hear ten no’s and walk into door eleven the same way',
+  'You want pay tied to output, not hours',
+  'Motivated and self-directed',
+  'Part-time or full-time interest welcome',
+];
+---
+
+<section id="markets" class="pb-16 sm:pb-20 lg:pb-[88px]" aria-label="Who we’re looking for and Florida markets">
+  <div class="wrap grid gap-4 lg:grid-cols-2">
+    <div class="rounded-[22px] border border-line bg-card p-6 sm:p-9">
+      <p class="label">Who we’re looking for</p>
+      <h2 class="mt-3 text-[2rem] leading-[1.05] font-semibold tracking-[-0.035em] sm:text-[2.5rem]">Driven people win here.</h2>
+      <p class="mt-3 text-[1.0625rem] leading-relaxed text-ink/80">
+        Field sales experience helps, but payments experience is not required.
+      </p>
+      <ul class="mt-7 space-y-4">
+        {
+          qualities.map((q) => (
+            <li class="flex gap-3 text-[1rem] leading-snug">
+              <svg viewBox="0 0 20 20" class="mt-px size-5 shrink-0" aria-hidden="true">
+                <circle cx="10" cy="10" r="10" fill="#111" />
+                <path d="m6 10.2 2.6 2.6L14 7.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              {q}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="flex flex-col rounded-[22px] border border-line bg-card p-6 sm:p-9">
+      <p class="label">Florida markets</p>
+      <h2 class="mt-3 text-[2rem] leading-[1.05] font-semibold tracking-[-0.035em] sm:text-[2.5rem]">Real opportunities<br />in real markets.</h2>
+      <p class="mt-3 text-[1.0625rem] leading-relaxed text-ink/80">We’re building our founding bench across Florida.</p>
+      <ul class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {
+          markets.map((m) => (
+            <li>
+              <Image
+                src={photos[m.city].src}
+                alt={photos[m.city].alt}
+                widths={[240, 360, 480]}
+                sizes="(min-width: 1024px) 130px, (min-width: 640px) 22vw, 45vw"
+                loading="lazy"
+                class="aspect-[3/2] h-auto w-full rounded-xl object-cover"
+              />
+              <p class="mt-1.5 text-[0.875rem] font-medium">{m.city}</p>
+            </li>
+          ))
+        }
+        <li class="flex">
+          <a
+            href="#apply"
+            class="flex aspect-[3/2] w-full items-center justify-center rounded-xl border border-dashed border-[#cfcfcb] px-2 text-center text-[0.8125rem] font-medium"
+            data-apply-cta="markets-other"
+          >
+            Elsewhere in Florida? Apply →
+          </a>
+        </li>
+      </ul>
+      <p class="mt-auto pt-6 text-[0.8125rem] leading-relaxed text-muted">
+        Recruiting focus areas, not assigned or exclusive territories. Territory arrangements are set out in your representative agreement.
+      </p>
+    </div>
+  </div>
+</section>

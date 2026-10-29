@@ -1,0 +1,54 @@
+---
+import { faqs, statusLabels, statusRows, type StatusKind } from '../config/faq';
+
+const dot: Record<StatusKind, string> = {
+  confirmed: 'bg-ink',
+  agreement: 'bg-[#a3a39f]',
+  pending: 'bg-pending',
+};
+---
+
+<section id="faq" class="border-t border-line pt-16 pb-16 sm:pt-20 sm:pb-20 lg:pt-[88px] lg:pb-[104px]" aria-labelledby="faq-title">
+  <div class="wrap grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+    <div>
+      <p class="label">About Trident</p>
+      <h2 id="faq-title" class="headline mt-3">Straight answers.</h2>
+      <p class="subhead mt-4">We’re pre-launch, so some details are still being set. Here’s exactly where things stand.</p>
+
+      <dl class="mt-8 divide-y divide-line border-y border-line">
+        {
+          statusRows.map((r) => (
+            <div class="flex items-start justify-between gap-4 py-3.5">
+              <dt class="text-[0.9375rem]">
+                <span class="font-medium">{r.topic}</span>
+                <span class="block text-[0.875rem] text-muted">{r.detail}</span>
+              </dt>
+              <dd class="flex shrink-0 items-center gap-1.5 pt-0.5 text-[0.8125rem] text-muted">
+                <span class:list={['size-1.5 rounded-full', dot[r.status]]} aria-hidden="true" />
+                {statusLabels[r.status]}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <div class="divide-y divide-line border-y border-line lg:self-start">
+      {
+        faqs.map((f) => (
+          <details class="group">
+            <summary class="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-4 text-left text-[1.0625rem] font-medium">
+              {f.q}
+              <svg viewBox="0 0 20 20" class="size-5 shrink-0 text-muted transition-transform group-open:rotate-45" aria-hidden="true">
+                <path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </summary>
+            <div class="space-y-3 pr-8 pb-5 text-[0.9688rem] leading-relaxed text-muted">
+              {f.a.map((p) => <p>{p}</p>)}
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

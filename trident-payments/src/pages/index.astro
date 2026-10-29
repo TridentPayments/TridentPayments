@@ -1,0 +1,53 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Compensation from '../components/Compensation.astro';
+import Calculator from '../components/Calculator.astro';
+import Work from '../components/Work.astro';
+import Fit from '../components/Fit.astro';
+import About from '../components/About.astro';
+import Apply from '../components/Apply.astro';
+import Footer from '../components/Footer.astro';
+import { faqs } from '../config/faq';
+
+// FAQPage schema generated from the same content rendered in the FAQ section.
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a.join(' ') },
+  })),
+};
+---
+
+<Base schema={[faqSchema]}>
+  <Header />
+  <main id="main">
+    <Hero />
+    <Compensation />
+    <Calculator />
+    <Work />
+    <Fit />
+    <Apply />
+    <About />
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  import { track } from '../lib/track';
+
+  // Header: frosted background once the page scrolls.
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Track every apply CTA by its location.
+  document.addEventListener('click', (e) => {
+    const cta = (e.target as Element).closest<HTMLElement>('[data-apply-cta]');
+    if (cta) track('apply_cta_click', { location: cta.dataset.applyCta || 'unknown' });
+  });
+</script>

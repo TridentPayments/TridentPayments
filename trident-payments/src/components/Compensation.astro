@@ -1,0 +1,38 @@
+---
+const items = [
+  {
+    title: 'Upfront commissions',
+    body: 'Paid on each qualifying new account, scaled by the merchant and the contract terms.',
+    icon: '<path d="M16 3 3 9.5 16 16l13-6.5L16 3Z"/><path d="m3 15.5 13 6.5 13-6.5-3.6-1.8L16 18.4l-9.4-4.7L3 15.5Z"/><path d="m3 21.5 13 6.5 13-6.5-3.6-1.8L16 24.4l-9.4-4.7L3 21.5Z"/>',
+  },
+  {
+    title: 'Monthly residuals',
+    body: 'Get paid every month the account stays active. Build a portfolio that can compound.',
+    icon: '<rect x="4" y="17" width="6" height="11" rx="1.2"/><rect x="13" y="11" width="6" height="17" rx="1.2"/><rect x="22" y="4" width="6" height="24" rx="1.2"/>',
+  },
+  {
+    title: '$0 equipment plan for reps',
+    body: 'Trident plans to cover terminals and POS, so you don’t front hardware. Final policy confirmed before launch.',
+    icon: '<path fill-rule="evenodd" d="M9.5 2h13A2.5 2.5 0 0 1 25 4.5v23a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 7 27.5v-23A2.5 2.5 0 0 1 9.5 2Zm1.5 3v7h10V5H11Zm0 10v2.5h2.5V15H11Zm4.75 0v2.5h2.5V15h-2.5ZM20.5 15v2.5H23V15h-2.5ZM11 19.5V22h2.5v-2.5H11Zm4.75 0V22h2.5v-2.5h-2.5Zm4.75 0V22H23v-2.5h-2.5ZM11 24v2.5h2.5V24H11Zm4.75 0v2.5h2.5V24h-2.5Zm4.75 0v2.5H23V24h-2.5Z"/>',
+  },
+];
+---
+
+<section id="compensation" class="pb-6 lg:pb-8" aria-labelledby="comp-title">
+  <div class="wrap">
+    <h2 id="comp-title" class="sr-only">How reps get paid</h2>
+    <div class="grid gap-3 md:grid-cols-3 md:gap-4">
+      {
+        items.map((i) => (
+          <article class="flex gap-5 rounded-[18px] border border-line bg-card p-6">
+            <svg viewBox="0 0 32 32" class="mt-0.5 size-9 shrink-0" fill="#111" aria-hidden="true" set:html={i.icon} />
+            <div>
+              <h3 class="text-[1.0625rem] font-semibold tracking-[-0.015em]">{i.title}</h3>
+              <p class="mt-1.5 text-[0.9375rem] leading-relaxed text-muted">{i.body}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

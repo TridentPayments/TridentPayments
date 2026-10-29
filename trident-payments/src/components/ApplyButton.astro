@@ -1,0 +1,18 @@
+---
+import { site } from '../config/site';
+
+interface Props {
+  /** Analytics label for where on the page this button sits. */
+  location: string;
+  short?: boolean;
+  class?: string;
+}
+const { location, short = false, class: className = '' } = Astro.props;
+---
+
+<a href="#apply" class:list={['btn', short && 'btn-sm', className]} data-apply-cta={location}>
+  {short ? site.primaryCtaShort : site.primaryCta}
+  <svg viewBox="0 0 20 20" class="size-4 shrink-0" aria-hidden="true">
+    <path d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>
+</a>

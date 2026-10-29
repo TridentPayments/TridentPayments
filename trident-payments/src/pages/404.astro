@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import { site } from '../config/site';
+---
+
+<Base title={`Page not found — ${site.name}`} noindex>
+  <main id="main" class="grid min-h-svh place-items-center px-4 text-center">
+    <div>
+      <a href="/" class="inline-block"><Logo /></a>
+      <h1 class="headline mt-10">That page doesn’t exist.</h1>
+      <p class="subhead mt-3">The founding sales bench is recruiting on the home page.</p>
+      <a href="/#apply" class="btn mt-8">{site.primaryCta}</a>
+    </div>
+  </main>
+</Base>
