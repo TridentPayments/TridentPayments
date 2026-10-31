@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import { site } from '../config/site';
+import HQLoginLink from './HQLoginLink.astro';
 
 const year = new Date().getFullYear();
 const links = [
@@ -36,6 +37,7 @@ const links = [
             }
           </ul>
         </nav>
+        <HQLoginLink placement="footer" />
         <p class="text-muted">© {year} {site.legal.legalEntity ?? site.name}</p>
       </div>
     </div>
