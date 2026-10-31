@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import ApplyButton from './ApplyButton.astro';
+import HQLoginLink from './HQLoginLink.astro';
 
 const links = [
   { href: '#opportunity', label: 'Opportunity' },
@@ -27,7 +28,10 @@ const links = [
         }
       </ul>
     </nav>
-    <ApplyButton location="header" short />
+    <div class="flex shrink-0 items-center gap-2">
+      <HQLoginLink placement="header" />
+      <ApplyButton location="header" short />
+    </div>
   </div>
 </header>
 
