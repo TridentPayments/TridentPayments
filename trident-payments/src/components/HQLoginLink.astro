@@ -1,0 +1,17 @@
+---
+import { resolveHqLoginUrl } from '../lib/hq-url';
+
+interface Props { placement?: 'header' | 'footer' }
+const { placement = 'header' } = Astro.props;
+const hqLoginUrl = resolveHqLoginUrl(import.meta.env.PUBLIC_HQ_URL);
+---
+{hqLoginUrl && (
+  <a
+    href={hqLoginUrl}
+    class={placement === 'header'
+      ? 'inline-flex min-h-10 shrink-0 items-center rounded-full border border-ink/20 px-3 text-center text-[0.875rem] font-medium text-ink transition hover:border-ink focus-visible:outline-offset-4 sm:px-4'
+      : 'text-ink/80 hover:text-ink'}
+    aria-label="Trident HQ — secure representative login"
+    data-hq-login
+  >Rep Login</a>
+)}
