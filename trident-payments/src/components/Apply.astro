@@ -2,9 +2,9 @@
 import { site } from '../config/site';
 import { COMMITMENT_OPTIONS, EXPERIENCE_OPTIONS, LIMITS } from '../lib/validation';
 
-const endpoint = (import.meta.env.PUBLIC_APPLICATION_ENDPOINT ?? '').trim();
+const endpoint = (import.meta.env.PUBLIC_APPLICATION_ENDPOINT ?? '').trim() || '/api/applications';
 // https in production; plain http is accepted for localhost testing only.
-const configured = /^(https:\/\/|http:\/\/localhost[:/])/.test(endpoint);
+const configured = endpoint === '/api/applications' || /^(https:\/\/|http:\/\/localhost[:/])/.test(endpoint);
 if (!configured) {
   console.warn('[trident] PUBLIC_APPLICATION_ENDPOINT is not set — the application form will show a "not connected" notice.');
 }

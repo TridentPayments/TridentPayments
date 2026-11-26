@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -18,6 +19,7 @@ if (site === PLACEHOLDER_SITE) {
 
 export default defineConfig({
   site,
+  adapter: vercel(),
   trailingSlash: 'ignore',
   integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
   vite: {
